@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: lab-app-deployment
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: web
@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: devops-container
-        image: devops-lab-app:v1
-        imagePullPolicy: Never
+        image: localhost:5000/devops-lab-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
         resources:
