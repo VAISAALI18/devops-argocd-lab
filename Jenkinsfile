@@ -63,37 +63,34 @@ pipeline {
             }
         }
 
-        stage('Update GitOps Repo') {
-            steps {
-                echo '=== Stage 6: Updating GitOps Repository ==='
-                withCredentials([usernamePassword(
-                    credentialsId: 'github-creds',
-                    usernameVariable: 'GIT_USERNAME',
-                    passwordVariable: 'GIT_PASSWORD'
-                )]) {
-                    sh """
-                        # Clone GitOps repo
-                        rm -rf /tmp/gitops-repo
-                        git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/VAISAALI18/devops-argocd-lab /tmp/gitops-repo
+	stage('Update GitOps Repo') {
+    steps {
+        echo '=== Stage 6: Updating GitOps Repository ==='
+        withCredentials([usernamePassword(
+            credentialsId: 'github-creds',
+            usernameVariable: 'GIT_USERNAME',
+            passwordVariable: 'GIT_PASSWORD'
+        )]) {
+            sh """
+                rm -rf /tmp/gitops-repo
+                git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/VAISAALI18/devops-argocd-lab.git /tmp/gitops-repo
 
-                        # Update image tag in deployment.yaml
-                        cd /tmp/gitops-repo
-                        sed -i 's|image: localhost:5000/devops-lab-app:.*|image: localhost:5000/devops-lab-app:${IMAGE_TAG}|g' deployment.yaml
+                cd /tmp/gitops-repo
+                git config --global --add safe.directory /tmp/gitops-repo
 
-                        # Verify the change
-                        grep image deployment.yaml
+                sed -i 's|image: localhost:5000/devops-lab-app:.*|image: localhost:5000/devops-lab-app:${IMAGE_TAG}|g' deployment.yaml
 
-                        # Commit and push
-                        git config user.email "ci@jenkins.com"
-                        git config user.name "Jenkins CI"
-                        git add deployment.yaml
-                        git commit -m "ci: Update image tag to ${IMAGE_TAG} [skip ci]"
-                        git push origin main
-                    """
-                }
-            }
+                git config user.email "ci@jenkins.com"
+                git config user.name "Jenkins CI"
+
+                git add deployment.yaml
+                git commit -m "ci: Update image tag to ${IMAGE_TAG} [skip ci]"
+                git push origin main
+            """
         }
     }
+}
+	}
 
     post {
         success {
